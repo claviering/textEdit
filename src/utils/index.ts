@@ -1,12 +1,13 @@
-export function searchWordBreak(ctx: C2D, text: string) {
-  let width = ctx.canvas.width;
+import { DEFAULT_TEXT_OPTIONS } from "../constants";
+
+export function searchWordBreak(ctx: C2D, maxWidth: number, text: string) {
   let left = 0;
   let right = text.length - 1;
   while (left <= right) {
     let mid = Math.floor((left + right) / 2);
     let sub = text.substring(0, mid);
     const textMetrics = ctx.measureText(sub);
-    if (textMetrics.width > width) {
+    if (textMetrics.width > maxWidth) {
       right = mid - 1;
     } else {
       left = mid + 1;
@@ -15,28 +16,25 @@ export function searchWordBreak(ctx: C2D, text: string) {
   return left - 1;
 }
 
-// calc next line top position when word-break
-export function lastLineTop(textList: TextPOS[]): number {
-  if (!textList || !textList.length) return 0;
-  let last = textList.length - 1;
-  let top = textList[last].top;
-  let nextTop = top + textList[last].height;
-  for (let i = last - 1; i >= 0; i--) {
-    const item = textList[i];
-    if (item.top === top) {
-      nextTop = Math.max(nextTop, item.top + item.height);
-    }
+export function setCtxOptions(ctx: C2D, options: TextOptions | undefined) {
+  options = Object.assign({}, DEFAULT_TEXT_OPTIONS, options);
+  for (const key in options) {
+    // @ts-ignore
+    ctx[key] = options[key];
   }
-  return nextTop;
 }
 
-export function appendLinePos(textList: TextPOS[]): {
-  left: number;
-  top: number;
-} {
-  if (!textList || !textList.length) return { left: 0, top: 0 };
-  let last = textList.length - 1;
-  let top = textList[last].top;
-  let left = textList[last].left + textList[last].width;
-  return { left, top };
+export function setTextPos(
+  ctx: C2D,
+  textConfig: TextConfig,
+  left: number
+): ISetTextConfig {
+  const textMetrics = ctx.measureText(textConfig.text);
+  const ascent = textMetrics.fontBoundingBoxAscent;
+  const descent = textMetrics.fontBoundingBoxDescent;
+  textConfig.ascent = ascent;
+  textConfig.descent = descent;
+  textConfig.width = textMetrics.width;
+  textConfig.left = left;
+  return { ascent, descent, width: textMetrics.width };
 }

@@ -1,11 +1,13 @@
-html, body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+html,
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   margin: 0px;
   padding: 0px;
 }
-canvas{
+canvas {
   margin: auto;
   display: block;
   margin-top: 24px;
-  box-shadow:  0 15px 35px rgba(0,0,0,0.1);
+  border: 1px solid #ccc;
 }
