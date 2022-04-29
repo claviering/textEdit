@@ -73,4 +73,20 @@ export let textData: TextConfig[] = [
     descent: 0,
     ascent: 0,
   },
+  {
+    text: "cbb",
+    left: 0,
+    top: 0,
+    width: 0,
+    descent: 0,
+    ascent: 0,
+  },
+  {
+    text: "a",
+    left: 0,
+    top: 0,
+    width: 0,
+    descent: 0,
+    ascent: 0,
+  },
 ];

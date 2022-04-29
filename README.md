@@ -8,3 +8,4 @@ using canvas
 2. [x] Change mouse cursor style to text when hovering over the text
 3. [x] Add word-break
 4. [x] Append word and line
+5. [x] Add Blinking cursor in the region of char

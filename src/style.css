@@ -5,9 +5,42 @@ body {
   margin: 0px;
   padding: 0px;
 }
-canvas {
+#canvas {
+  position: relative;
+  width: 400px;
+  height: 500px;
+  margin: auto;
+}
+#canvas canvas {
   margin: auto;
   display: block;
   margin-top: 24px;
   border: 1px solid #ccc;
+}
+@keyframes blinking {
+  to {
+    visibility: hidden;
+  }
+}
+@-webkit-keyframes blinking {
+  to {
+    visibility: hidden;
+  }
+}
+.blinking-cursor {
+  width: 1px;
+  background-color: #000;
+  position: absolute;
+  animation: blinking 1s steps(5, start) infinite;
+  -webkit-animation: blinking 1s steps(5, start) infinite;
+  pointer-events: none;
+}
+.selected-text-bg {
+  position: absolute;
+  background-color: rgb(199, 208, 215);
+  pointer-events: none;
+  width: 200px;
+  height: 40px;
+  top: 0px;
+  left: 0px;
 }

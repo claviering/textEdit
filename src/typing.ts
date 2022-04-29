@@ -1,4 +1,6 @@
 type C2D = CanvasRenderingContext2D;
+type ME = MouseEvent;
+type CE = HTMLCanvasElement;
 
 interface TextOptions {
   fillStyle?: string;

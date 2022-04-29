@@ -49,6 +49,7 @@ export function renderLine(ctx: C2D, texts: TextConfig[]) {
       wordBreak(ctx, texts, i);
       renderTexts(ctx, texts, start, i, curLineTop + maxAscent);
       curLineTop = curLineTop + lineHeight;
+      lineHeight = 0;
       start = i + 1;
       left = 0;
       maxAscent = 0;
@@ -56,5 +57,26 @@ export function renderLine(ctx: C2D, texts: TextConfig[]) {
     }
     left = left + width;
   }
+  // last line
   renderTexts(ctx, texts, start, texts.length - 1, curLineTop + maxAscent);
+}
+
+export function getClickText(
+  texts: TextConfig[],
+  x: number,
+  y: number
+): TextConfig | null {
+  for (let i = 0; i < texts.length; i++) {
+    const text = texts[i];
+    let { left, width, top, ascent, descent } = text;
+    if (
+      x >= left &&
+      x <= left + width &&
+      y >= top - ascent &&
+      y <= top + descent
+    ) {
+      return text;
+    }
+  }
+  return null;
 }
