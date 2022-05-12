@@ -22,7 +22,31 @@ export let textData: TextConfig[] = [
     },
   },
   {
-    text: "ABAJCIWAKSJ123456 FONT_FAMILY options red, descent, ascent",
+    text: "ABAJCIWAKSJ1",
+    left: 0,
+    top: 0,
+    width: 0,
+    descent: 0,
+    ascent: 0,
+    options: {
+      fillStyle: "red",
+      font: `40px ${FONT_FAMILY}`,
+    },
+  },
+  {
+    text: "23456789",
+    left: 0,
+    top: 0,
+    width: 0,
+    descent: 0,
+    ascent: 0,
+    options: {
+      fillStyle: "red",
+      font: `40px ${FONT_FAMILY}`,
+    },
+  },
+  {
+    text: "ILY",
     left: 0,
     top: 0,
     width: 0,
@@ -54,7 +78,7 @@ export let textData: TextConfig[] = [
     },
   },
   {
-    text: "ABAJC",
+    text: "CMK",
     left: 0,
     top: 0,
     width: 0,
@@ -74,7 +98,7 @@ export let textData: TextConfig[] = [
     ascent: 0,
   },
   {
-    text: "cbb",
+    text: "cb",
     left: 0,
     top: 0,
     width: 0,

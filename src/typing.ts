@@ -24,8 +24,26 @@ interface TextConfig extends TextPOS {
   options?: TextOptions;
 }
 
+type TC = TextConfig;
+
 interface ISetTextConfig {
   ascent: number;
   descent: number;
   width: number;
+}
+
+interface SelectTextPos {
+  selecting: boolean;
+  count: number;
+  i: IBlinkingData;
+}
+
+interface IBlinkingData {
+  left: number;
+  top: number;
+  height: number;
+  textTop: number;
+  /** the index of text in textConfig */
+  index: number;
+  text: TC;
 }

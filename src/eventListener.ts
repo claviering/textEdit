@@ -1,31 +1,6 @@
 import { setCtxOptions } from "./utils";
 import { getClickText } from "./text";
 
-// function hoverBorder(canvas: HTMLCanvasElement, x: number, y: number): boolean {
-//   let cw = canvas.width;
-//   let ch = canvas.height;
-//   let r = 3;
-//   if ((y < r || y > ch - r) && x > r && x < cw - r) {
-//     // top or bottom border
-//     canvas.style.cursor = "ns-resize";
-//     return true;
-//   } else if ((x < r || x > cw - r) && y > r && y < ch - r) {
-//     // left or right border
-//     canvas.style.cursor = "ew-resize";
-//     return true;
-//   } else if ((x < r && y < r) || (x > cw - r && y > ch - r)) {
-//     // top left or bottom right
-//     canvas.style.cursor = "nwse-resize";
-//     return true;
-//   } else if ((x > cw - r && y < r) || (x < r && y > ch - r)) {
-//     // top right or bottom left
-//     canvas.style.cursor = "nesw-resize";
-//     return true;
-//   } else {
-//     return false;
-//   }
-// }
-
 function hoverText(canvas: CE, textList: TextPOS[], x: number, y: number) {
   for (let i = 0; i < textList.length; i++) {
     const { left, top, width, ascent, descent } = textList[i];
@@ -38,7 +13,7 @@ function hoverText(canvas: CE, textList: TextPOS[], x: number, y: number) {
   }
 }
 
-export function mouseMove(e: ME, canvas: CE, textList: TextPOS[]) {
+export function mouseMove(e: ME, canvas: CE, textList: TC[]) {
   let rect = canvas.getBoundingClientRect();
   let x = e.clientX - rect.left;
   let y = e.clientY - rect.top;
@@ -46,27 +21,22 @@ export function mouseMove(e: ME, canvas: CE, textList: TextPOS[]) {
   hoverText(canvas, textList, x, y);
 }
 
-export function addBlinking(
-  e: ME,
-  canvas: CE,
+export function getBlinkingPos(
   ctx: C2D | null,
-  textConfig: TextConfig[]
-) {
-  let blinking = document.querySelector(".blinking-cursor") as HTMLDivElement;
-  if (!blinking || canvas.style.cursor !== "text") return;
-  let rect = canvas.getBoundingClientRect();
-  let x = e.clientX - rect.left;
-  let y = e.clientY - rect.top;
-  let clickText = getClickText(textConfig, x, y);
-  if (!clickText || !ctx) {
-    return;
+  textConfig: TC[],
+  x: number,
+  y: number
+): IBlinkingData {
+  let left = -1;
+  let { text, index } = getClickText(textConfig, x, y);
+  if (!text || !ctx) {
+    return {} as IBlinkingData;
   }
-  let blinkingLeft = x;
-  setCtxOptions(ctx, clickText.options);
-  let textLeftPos = clickText.left;
-  let textRightPos = clickText.left;
-  for (let i = 0; i < clickText.text.length; i++) {
-    const textMetrics = ctx.measureText(clickText.text[i]);
+  setCtxOptions(ctx, text.options);
+  let textLeftPos = text.left;
+  let textRightPos = -1;
+  for (let i = 0; i < text.text.length; i++) {
+    const textMetrics = ctx.measureText(text.text[i]);
     textRightPos = textLeftPos + textMetrics.width;
     let leftDir = x - textLeftPos;
     let rightDir = textRightPos - x;
@@ -75,19 +45,47 @@ export function addBlinking(
       continue;
     }
     if (leftDir < rightDir) {
-      blinkingLeft = textLeftPos;
+      left = textLeftPos;
       break;
     } else if (leftDir > rightDir) {
-      blinkingLeft = textRightPos;
+      left = textRightPos;
       break;
     } else if (leftDir === rightDir) {
-      blinkingLeft = textLeftPos;
+      left = textLeftPos;
       break;
     }
   }
-  let height = clickText.ascent + clickText.descent;
-  let top = clickText.top - clickText.ascent;
-  blinking.style.left = `${blinkingLeft}px`;
+  let height = text.ascent + text.descent;
+  let top = text.top - text.ascent;
+  return { left, top, height, textTop: text.top, text, index };
+}
+
+export function addBlinking(
+  e: ME,
+  canvas: CE,
+  ctx: C2D | null,
+  textConfig: TC[]
+) {
+  if (!ctx) return;
+  let blinking = document.querySelector(".blinking-cursor") as HTMLDivElement;
+  if (!blinking || canvas.style.cursor !== "text") return;
+  let rect = canvas.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  let y = e.clientY - rect.top;
+  const { left, top, height } = getBlinkingPos(ctx, textConfig, x, y);
+  blinking.style.left = `${left}px`;
   blinking.style.top = `${top}px`;
   blinking.style.height = `${height}px`;
+}
+
+export function handleSelectText(
+  e: ME,
+  ctx: C2D,
+  textConfig: TC[]
+): IBlinkingData {
+  if (ctx.canvas.style.cursor !== "text") return {} as IBlinkingData;
+  let rect = ctx.canvas.getBoundingClientRect();
+  let x = e.clientX - rect.left;
+  let y = e.clientY - rect.top;
+  return getBlinkingPos(ctx, textConfig, x, y);
 }
