@@ -33,6 +33,7 @@ function wordBreak(ctx: C2D, texts: TextConfig[], index: number): number {
   nextLineText.left = 0;
   texts.splice(index + 1, 0, nextLineText);
   text.text = text.text.substring(0, textRightPos);
+  text.width = ctx.measureText(text.text).width;
   return textRightPos;
 }
 
@@ -106,20 +107,73 @@ export function getClickText(
 
 export function selectText(
   ctx: C2D,
-  textConfig: TC[],
+  tc: TC[],
   i: IBlinkingData,
   j: IBlinkingData
 ) {
-  console.log(i.index, j.index);
-  console.log(textConfig);
+  if (i.index > j.index) [i, j] = [j, i];
+  if (i.left === undefined || j.left === undefined || i.left < 0 || j.left < 0)
+    return;
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.fillStyle = "rgb(199, 208, 215)";
   if (i.index === j.index) {
-    console.log("111");
-    ctx.fillStyle = "rgb(199, 208, 215)";
-    let w = Math.max(j.left, i.left) - Math.min(j.left, i.left);
-    ctx.fillRect(0, i.top, w, i.height);
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    // console.log(
+    //   "selected",
+    //   i.text.text.slice(
+    //     Math.min(i.textIndex, j.textIndex) + 1,
+    //     Math.max(i.textIndex, j.textIndex) + 1
+    //   )
+    // );
+    ctx.fillRect(i.left, i.top, j.left - i.left, i.height);
+    renderTexts(ctx, tc, 0, tc.length - 1);
+    return;
   }
-  // if (i.index > j.index) {
-  //   [i, j] = [j, i];
-  // }
+  // same line but not same text
+  if (i.textTop === j.textTop) {
+    let y = Math.min(i.top, j.top);
+    let h = Math.max(i.height, j.height);
+    ctx.fillRect(i.left, y, j.left - i.left, h);
+    renderTexts(ctx, tc, 0, tc.length - 1);
+  } else {
+    let h = i.height;
+    let y = i.top;
+    let r = 0;
+    let l = 0;
+    let i_k = i.index;
+    let j_k = j.index;
+    // to the end of line
+    for (; i_k < tc.length && tc[i_k].top === i.textTop; i_k++) {
+      const text = tc[i_k];
+      h = Math.max(h, text.ascent + text.descent);
+      y = Math.min(y, text.top - text.ascent);
+      r = text.left + text.width;
+    }
+    ctx.fillRect(i.left, y, r - i.left, h);
+    h = j.height;
+    y = j.top;
+    // to the start of line
+    for (; tc[j_k].top === j.textTop; j_k--) {
+      h = Math.max(h, tc[j_k].ascent + tc[j_k].descent);
+      y = Math.min(y, tc[j_k].top - tc[j_k].ascent);
+      l = tc[j_k].left;
+    }
+    ctx.fillRect(l, y, j.left - l, h);
+    h = tc[i_k].ascent + tc[i_k].descent;
+    l = tc[i_k].left;
+    y = tc[i_k].top;
+    r = tc[i_k].left + tc[i_k].width;
+    for (; i_k <= j_k; i_k++) {
+      h = Math.max(h, tc[i_k].ascent + tc[i_k].descent);
+      y = Math.min(y, tc[i_k].top - tc[i_k].ascent);
+      r = tc[i_k].left + tc[i_k].width;
+      if (tc[i_k].top !== tc[i_k + 1].top) {
+        ctx.fillRect(l, y, r - l, h);
+        h = tc[i_k + 1].ascent + tc[i_k + 1].descent;
+        l = tc[i_k + 1].left;
+        y = tc[i_k + 1].top;
+        r = tc[i_k + 1].left + tc[i_k + 1].width;
+      }
+    }
+    renderTexts(ctx, tc, 0, tc.length - 1);
+  }
 }

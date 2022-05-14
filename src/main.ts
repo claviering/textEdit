@@ -1,6 +1,6 @@
 import "./style.css";
 import { mouseMove, addBlinking, handleSelectText } from "./eventListener";
-import { initPos, selectText } from "./text";
+import { initPos, selectText, renderTexts } from "./text";
 import { textData } from "./mock";
 
 function cleanSelectText(
@@ -12,7 +12,7 @@ function cleanSelectText(
   if (ctx && selectTextPos.count === 2 && !selectTextPos.selecting) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     selectTextPos.count = 0;
-    // renderLine(ctx, textConfig);
+    renderTexts(ctx, textConfig, 0, textConfig.length - 1);
   }
 }
 
@@ -31,28 +31,25 @@ function render(textConfig: TextConfig[]) {
   };
   canvas.addEventListener("click", function (e: MouseEvent) {
     addBlinking(e, canvas, ctx, textConfig);
-    // cleanSelectText(canvas, ctx, selectTextPos, textConfig);
-    // selectTextPos.count = 2;
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    initPos(ctx, textConfig);
+    cleanSelectText(canvas, ctx, selectTextPos, textConfig);
+    selectTextPos.count = 2;
   });
   canvas.addEventListener("mousemove", (e: MouseEvent) => {
     mouseMove(e, canvas, textConfig);
-    // let selecting = selectTextPos.selecting;
-    // if (selecting && ctx) {
-    //   let j = handleSelectText(e, ctx, textConfig);
-    //   selectText(ctx, textConfig, selectTextPos.i, j);
-    // }
+    let selecting = selectTextPos.selecting;
+    if (selecting && ctx) {
+      let j = handleSelectText(e, ctx, textConfig);
+      selectText(ctx, textConfig, selectTextPos.i, j);
+    }
   });
-  // canvas.addEventListener("mousedown", function (e: MouseEvent) {
-  //   cleanSelectText(canvas, ctx, selectTextPos, textConfig);
-  //   let i = handleSelectText(e, ctx, textConfig);
-  //   selectTextPos.selecting = true;
-  //   selectTextPos.i = i;
-  // });
-  // canvas.addEventListener("mouseup", function () {
-  //   selectTextPos.selecting = false;
-  // });
+  canvas.addEventListener("mousedown", function (e: MouseEvent) {
+    cleanSelectText(canvas, ctx, selectTextPos, textConfig);
+    selectTextPos.selecting = true;
+    selectTextPos.i = handleSelectText(e, ctx, textConfig);
+  });
+  canvas.addEventListener("mouseup", function () {
+    selectTextPos.selecting = false;
+  });
   app.appendChild(canvas);
   initPos(ctx, textConfig);
   ctx.globalCompositeOperation = "source-over";

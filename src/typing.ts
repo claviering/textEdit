@@ -45,5 +45,7 @@ interface IBlinkingData {
   textTop: number;
   /** the index of text in textConfig */
   index: number;
+  /** the index of blinking in text */
+  textIndex: number;
   text: TC;
 }

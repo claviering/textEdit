@@ -35,7 +35,8 @@ export function getBlinkingPos(
   setCtxOptions(ctx, text.options);
   let textLeftPos = text.left;
   let textRightPos = -1;
-  for (let i = 0; i < text.text.length; i++) {
+  let i = 0;
+  for (i = 0; i < text.text.length; i++) {
     const textMetrics = ctx.measureText(text.text[i]);
     textRightPos = textLeftPos + textMetrics.width;
     let leftDir = x - textLeftPos;
@@ -45,19 +46,21 @@ export function getBlinkingPos(
       continue;
     }
     if (leftDir < rightDir) {
+      i = i - 1;
       left = textLeftPos;
       break;
     } else if (leftDir > rightDir) {
       left = textRightPos;
       break;
     } else if (leftDir === rightDir) {
+      i = i - 1;
       left = textLeftPos;
       break;
     }
   }
   let height = text.ascent + text.descent;
   let top = text.top - text.ascent;
-  return { left, top, height, textTop: text.top, text, index };
+  return { left, top, height, textTop: text.top, text, index, textIndex: i };
 }
 
 export function addBlinking(
