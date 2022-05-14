@@ -1,4 +1,5 @@
 import { setCtxOptions, setTextPos, searchWordBreak } from "./utils";
+import { clipboard } from "./utils/clipboard";
 
 export function renderTexts(
   ctx: C2D,
@@ -116,25 +117,34 @@ export function selectText(
     return;
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.fillStyle = "rgb(199, 208, 215)";
+  let selected = ""; // selected text
   if (i.index === j.index) {
-    // console.log(
-    //   "selected",
-    //   i.text.text.slice(
-    //     Math.min(i.textIndex, j.textIndex) + 1,
-    //     Math.max(i.textIndex, j.textIndex) + 1
-    //   )
-    // );
+    selected = i.text.text.slice(
+      Math.min(i.textIndex, j.textIndex) + 1,
+      Math.max(i.textIndex, j.textIndex) + 1
+    );
+    clipboard.setData(selected);
     ctx.fillRect(i.left, i.top, j.left - i.left, i.height);
     renderTexts(ctx, tc, 0, tc.length - 1);
     return;
   }
   // same line but not same text
   if (i.textTop === j.textTop) {
-    let y = Math.min(i.top, j.top);
-    let h = Math.max(i.height, j.height);
+    selected = i.text.text.slice(i.textIndex + 1);
+    let y = i.top;
+    let h = i.height;
+    for (let i_k = i.index + 1; i_k <= j.index; i_k++) {
+      if (i_k === j.index) {
+        selected += tc[i_k].text.slice(0, j.textIndex + 1);
+      } else {
+        selected += tc[i_k].text;
+      }
+      y = Math.min(y, tc[i_k].top - tc[i_k].ascent);
+      h = Math.max(h, tc[i_k].ascent + tc[i_k].descent);
+    }
     ctx.fillRect(i.left, y, j.left - i.left, h);
-    renderTexts(ctx, tc, 0, tc.length - 1);
   } else {
+    selected = i.text.text.slice(i.textIndex + 1);
     let h = i.height;
     let y = i.top;
     let r = 0;
@@ -144,6 +154,7 @@ export function selectText(
     // to the end of line
     for (; i_k < tc.length && tc[i_k].top === i.textTop; i_k++) {
       const text = tc[i_k];
+      if (i_k > i.index) selected += text.text;
       h = Math.max(h, text.ascent + text.descent);
       y = Math.min(y, text.top - text.ascent);
       r = text.left + text.width;
@@ -151,8 +162,10 @@ export function selectText(
     ctx.fillRect(i.left, y, r - i.left, h);
     h = j.height;
     y = j.top;
+    let endSelected = j.text.text.slice(0, j.textIndex + 1);
     // to the start of line
     for (; tc[j_k].top === j.textTop; j_k--) {
+      if (j_k > j.index) endSelected = tc[j_k].text + endSelected;
       h = Math.max(h, tc[j_k].ascent + tc[j_k].descent);
       y = Math.min(y, tc[j_k].top - tc[j_k].ascent);
       l = tc[j_k].left;
@@ -163,6 +176,7 @@ export function selectText(
     y = tc[i_k].top;
     r = tc[i_k].left + tc[i_k].width;
     for (; i_k <= j_k; i_k++) {
+      selected += tc[i_k].text;
       h = Math.max(h, tc[i_k].ascent + tc[i_k].descent);
       y = Math.min(y, tc[i_k].top - tc[i_k].ascent);
       r = tc[i_k].left + tc[i_k].width;
@@ -174,6 +188,8 @@ export function selectText(
         r = tc[i_k + 1].left + tc[i_k + 1].width;
       }
     }
-    renderTexts(ctx, tc, 0, tc.length - 1);
+    selected += endSelected;
   }
+  clipboard.setData(selected);
+  renderTexts(ctx, tc, 0, tc.length - 1);
 }
