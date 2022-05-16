@@ -21,7 +21,7 @@ export function renderTexts(
   }
 }
 
-function wordBreak(ctx: C2D, texts: TextConfig[], index: number): number {
+function wordBreak(ctx: C2D, texts: TC[], index: number): number {
   const text = texts[index];
   let wudth = ctx.canvas.width - text.left;
   let textRightPos = searchWordBreak(ctx, wudth, text.text);
@@ -38,7 +38,7 @@ function wordBreak(ctx: C2D, texts: TextConfig[], index: number): number {
   return textRightPos;
 }
 
-export function initPos(ctx: C2D, texts: TextConfig[]) {
+export function initPos(ctx: C2D, texts: TC[]) {
   let start = 0;
   let left = 0;
   let curLineTop = 0;
@@ -87,10 +87,10 @@ export function initPos(ctx: C2D, texts: TextConfig[]) {
 }
 
 export function getClickText(
-  texts: TextConfig[],
+  texts: TC[],
   x: number,
   y: number
-): { text: TextConfig | null; index: number } {
+): { text: TC | null; index: number } {
   for (let i = 0; i < texts.length; i++) {
     const text = texts[i];
     let { left, width, top, ascent, descent } = text;
@@ -104,6 +104,48 @@ export function getClickText(
     }
   }
   return { text: null, index: -1 };
+}
+
+export function getBlinkingPos(
+  ctx: C2D | null,
+  textConfig: TC[],
+  x: number,
+  y: number
+): IBlinkingData {
+  let left = -1;
+  let { text, index } = getClickText(textConfig, x, y);
+  if (!text || !ctx) {
+    return {} as IBlinkingData;
+  }
+  setCtxOptions(ctx, text.options);
+  let textLeftPos = text.left;
+  let textRightPos = -1;
+  let i = 0;
+  for (i = 0; i < text.text.length; i++) {
+    const textMetrics = ctx.measureText(text.text[i]);
+    textRightPos = textLeftPos + textMetrics.width;
+    let leftDir = x - textLeftPos;
+    let rightDir = textRightPos - x;
+    if (textLeftPos > x || x > textRightPos) {
+      textLeftPos = textRightPos;
+      continue;
+    }
+    if (leftDir < rightDir) {
+      i = i - 1;
+      left = textLeftPos;
+      break;
+    } else if (leftDir > rightDir) {
+      left = textRightPos;
+      break;
+    } else if (leftDir === rightDir) {
+      i = i - 1;
+      left = textLeftPos;
+      break;
+    }
+  }
+  let height = text.ascent + text.descent;
+  let top = text.top - text.ascent;
+  return { left, top, height, textTop: text.top, text, index, textIndex: i };
 }
 
 export function selectText(
@@ -192,4 +234,14 @@ export function selectText(
   }
   clipboard.setData(selected);
   renderTexts(ctx, tc, 0, tc.length - 1);
+}
+
+export function selectAllText(ctx: C2D, tc: TC[]) {
+  let x = tc[0].left;
+  let y = tc[0].top;
+  let i = getBlinkingPos(ctx, tc, x, y);
+  x = tc[tc.length - 1].left + tc[tc.length - 1].width;
+  y = tc[tc.length - 1].top;
+  let j = getBlinkingPos(ctx, tc, x, y);
+  selectText(ctx, tc, i, j);
 }

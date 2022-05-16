@@ -11,6 +11,7 @@ function render(textConfig: TextConfig[]) {
   if (!ctx) return;
   canvas.width = app.clientWidth;
   canvas.height = app.clientHeight;
+  canvas.tabIndex = 1;
 
   bindEven(canvas, ctx, textConfig);
   app.appendChild(canvas);

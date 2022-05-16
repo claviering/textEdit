@@ -1,5 +1,4 @@
-import { setCtxOptions } from "./utils";
-import { getClickText, selectText, renderTexts } from "./text";
+import { getBlinkingPos, selectText, renderTexts, selectAllText } from "./text";
 import { clipboard } from "./utils/clipboard";
 
 let selectTextPos: SelectTextPos = {
@@ -44,11 +43,25 @@ export function bindEven(canvas: CE, ctx: C2D, textConfig: TC[]) {
   canvas.addEventListener("mouseup", function () {
     selectTextPos.selecting = false;
   });
+  window.addEventListener("click", function (e: MouseEvent) {
+    if (e.target === canvas) {
+      canvas.focus();
+    } else {
+      canvas.blur();
+    }
+  });
   window.addEventListener("keydown", function (e: KeyboardEvent) {
     var ctrlKey = e.ctrlKey || e.metaKey;
     if (ctrlKey && e.code === "KeyC") {
       navigator.clipboard.writeText(clipboard.get());
       clipboard.clear();
+    } else if (
+      ctrlKey &&
+      e.code === "KeyA" &&
+      document.activeElement === canvas
+    ) {
+      console.log("select all");
+      selectAllText(ctx, textConfig);
     }
     e.preventDefault();
     return false;
@@ -73,48 +86,6 @@ function mouseMove(e: ME, canvas: CE, textList: TC[]) {
   let y = e.clientY - rect.top;
   // if (hoverBorder(canvas, x, y)) return;
   hoverText(canvas, textList, x, y);
-}
-
-function getBlinkingPos(
-  ctx: C2D | null,
-  textConfig: TC[],
-  x: number,
-  y: number
-): IBlinkingData {
-  let left = -1;
-  let { text, index } = getClickText(textConfig, x, y);
-  if (!text || !ctx) {
-    return {} as IBlinkingData;
-  }
-  setCtxOptions(ctx, text.options);
-  let textLeftPos = text.left;
-  let textRightPos = -1;
-  let i = 0;
-  for (i = 0; i < text.text.length; i++) {
-    const textMetrics = ctx.measureText(text.text[i]);
-    textRightPos = textLeftPos + textMetrics.width;
-    let leftDir = x - textLeftPos;
-    let rightDir = textRightPos - x;
-    if (textLeftPos > x || x > textRightPos) {
-      textLeftPos = textRightPos;
-      continue;
-    }
-    if (leftDir < rightDir) {
-      i = i - 1;
-      left = textLeftPos;
-      break;
-    } else if (leftDir > rightDir) {
-      left = textRightPos;
-      break;
-    } else if (leftDir === rightDir) {
-      i = i - 1;
-      left = textLeftPos;
-      break;
-    }
-  }
-  let height = text.ascent + text.descent;
-  let top = text.top - text.ascent;
-  return { left, top, height, textTop: text.top, text, index, textIndex: i };
 }
 
 function addBlinking(e: ME, canvas: CE, ctx: C2D | null, textConfig: TC[]) {
