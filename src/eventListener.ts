@@ -28,7 +28,6 @@ export function bindEven(canvas: CE, ctx: C2D, textConfig: TC[]) {
     selectTextPos.count = 2;
   });
   canvas.addEventListener("mousemove", (e: MouseEvent) => {
-    mouseMove(e, canvas, textConfig);
     let selecting = selectTextPos.selecting;
     if (selecting && ctx) {
       let j = handleSelectText(e, ctx, textConfig);
@@ -51,41 +50,19 @@ export function bindEven(canvas: CE, ctx: C2D, textConfig: TC[]) {
     }
   });
   window.addEventListener("keydown", function (e: KeyboardEvent) {
+    if (document.activeElement !== canvas) return;
     var ctrlKey = e.ctrlKey || e.metaKey;
     if (ctrlKey && e.code === "KeyC") {
       navigator.clipboard.writeText(clipboard.get());
       clipboard.clear();
-    } else if (
-      ctrlKey &&
-      e.code === "KeyA" &&
-      document.activeElement === canvas
-    ) {
-      console.log("select all");
+    } else if (ctrlKey && e.code === "KeyA") {
       selectAllText(ctx, textConfig);
+      navigator.clipboard.writeText(clipboard.get());
+      clipboard.clear();
     }
     e.preventDefault();
     return false;
   });
-}
-
-function hoverText(canvas: CE, textList: TextPOS[], x: number, y: number) {
-  for (let i = 0; i < textList.length; i++) {
-    const { left, top, width, ascent, descent } = textList[i];
-    if (x > left && x < left + width && y > top - ascent && y < top + descent) {
-      canvas.style.cursor = "text";
-      return;
-    } else {
-      canvas.style.cursor = "default";
-    }
-  }
-}
-
-function mouseMove(e: ME, canvas: CE, textList: TC[]) {
-  let rect = canvas.getBoundingClientRect();
-  let x = e.clientX - rect.left;
-  let y = e.clientY - rect.top;
-  // if (hoverBorder(canvas, x, y)) return;
-  hoverText(canvas, textList, x, y);
 }
 
 function addBlinking(e: ME, canvas: CE, ctx: C2D | null, textConfig: TC[]) {

@@ -11,6 +11,7 @@ function render(textConfig: TextConfig[]) {
   if (!ctx) return;
   canvas.width = app.clientWidth;
   canvas.height = app.clientHeight;
+  canvas.style.cursor = "text";
   canvas.tabIndex = 1;
 
   bindEven(canvas, ctx, textConfig);

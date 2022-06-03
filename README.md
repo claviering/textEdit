@@ -13,3 +13,5 @@ using canvas
 7. [ ] Improve performance: clearRect and rerender selected word
 8. [x] copy selected word to clipboard
 9. [x] ctrl/command + a to select all
+10. [x] mouse cursor will be text all time
+11. [ ] can click evenwhere
